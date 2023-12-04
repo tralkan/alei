@@ -5,14 +5,27 @@ import Layout from '@/layouts/_layout';
 import Button from '@/components/ui/button';
 import { ImageSlider } from '@/components/ui/image-slider';
 import useSWR from 'swr';
-import { TESTNET3_API_URL, getClaimValue, getClaims, getHeight, getMintBlock, getNFTs, getSettingsStatus } from '@/aleo/rpc';
+import {
+  TESTNET3_API_URL,
+  getClaimValue,
+  getClaims,
+  getHeight,
+  getMintBlock,
+  getNFTs,
+  getSettingsStatus,
+} from '@/aleo/rpc';
 import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
 import { LeoWalletAdapter } from '@demox-labs/aleo-wallet-adapter-leo';
-import { Transaction, WalletAdapterNetwork, WalletNotConnectedError } from '@demox-labs/aleo-wallet-adapter-base';
+import {
+  Transaction,
+  WalletAdapterNetwork,
+  WalletNotConnectedError,
+} from '@demox-labs/aleo-wallet-adapter-base';
 import { NFTProgramId } from '@/aleo/nft-program';
 import { getSettingsFromNumber } from '@/lib/util';
 import MintCountdown from '@/components/mint/countdown';
 import { random } from 'lodash';
+import Tyron from '@/components/tyron';
 
 type SectionProps = {
   title: string;
@@ -63,16 +76,30 @@ const DEFAULT_IMAGES = [
   'https://aleo-public.s3.us-west-2.amazonaws.com/testnet3/privacy-pride/5.png',
   'https://aleo-public.s3.us-west-2.amazonaws.com/testnet3/privacy-pride/6.png',
   'https://aleo-public.s3.us-west-2.amazonaws.com/testnet3/privacy-pride/7.png',
-  'https://aleo-public.s3.us-west-2.amazonaws.com/testnet3/privacy-pride/8.png'
-]
+  'https://aleo-public.s3.us-west-2.amazonaws.com/testnet3/privacy-pride/8.png',
+];
 
 const MintPage: NextPageWithLayout = () => {
   const { wallet, publicKey, requestRecords } = useWallet();
-  const { data: settingsNum, error, isLoading } = useSWR('getSettingsStatus', () => getSettingsStatus(TESTNET3_API_URL));
-  const { data: height, error: heightError, isLoading: heightIsLoading } = useSWR('height', () => getHeight(TESTNET3_API_URL));
-  const { data: mintBlock, error: mintBlockError, isLoading: mintBlockIsLoading } = useSWR('getMintBlock', () => getMintBlock(TESTNET3_API_URL));
+  const {
+    data: settingsNum,
+    error,
+    isLoading,
+  } = useSWR('getSettingsStatus', () => getSettingsStatus(TESTNET3_API_URL));
+  const {
+    data: height,
+    error: heightError,
+    isLoading: heightIsLoading,
+  } = useSWR('height', () => getHeight(TESTNET3_API_URL));
+  const {
+    data: mintBlock,
+    error: mintBlockError,
+    isLoading: mintBlockIsLoading,
+  } = useSWR('getMintBlock', () => getMintBlock(TESTNET3_API_URL));
 
-  let [settings, setSettings] = useState<any | undefined>(settingsNum ? getSettingsFromNumber(settingsNum!) : undefined);
+  let [settings, setSettings] = useState<any | undefined>(
+    settingsNum ? getSettingsFromNumber(settingsNum!) : undefined
+  );
   let [transactionId, setTransactionId] = useState<string | undefined>();
   let [nftImage, setNFTImage] = useState<string | undefined>();
   let [status, setStatus] = useState<string | undefined>();
@@ -89,8 +116,17 @@ const MintPage: NextPageWithLayout = () => {
     initialize();
   }, [settings, publicKey, nftProgramRecords]);
 
-  const mintingActive = (settings: any, height: number | undefined, block: number | undefined) => {
-    return settings?.active && height != undefined && block != undefined && block <= height;
+  const mintingActive = (
+    settings: any,
+    height: number | undefined,
+    block: number | undefined
+  ) => {
+    return (
+      settings?.active &&
+      height != undefined &&
+      block != undefined &&
+      block <= height
+    );
   };
 
   const claimRecords = () => {
@@ -102,12 +138,15 @@ const MintPage: NextPageWithLayout = () => {
   };
 
   const canWhitelistMint = () => {
-    return whitelistRecords().length > 0 && whitelistRecords().some((r) => {
-      const amountString = r.data.amount as string;
-      const amount = parseInt(amountString.split('u8')[0]);
-      return !r.spent && amount > 0;
-    });
-  }
+    return (
+      whitelistRecords().length > 0 &&
+      whitelistRecords().some((r) => {
+        const amountString = r.data.amount as string;
+        const amount = parseInt(amountString.split('u8')[0]);
+        return !r.spent && amount > 0;
+      })
+    );
+  };
 
   const initialize = async () => {
     if (!publicKey) {
@@ -127,30 +166,33 @@ const MintPage: NextPageWithLayout = () => {
       setRecordsRequested(true);
     }
 
-    if (claimRecords().length > 0 && claimRecords().some((claim) => !claim.spent)) {
+    if (
+      claimRecords().length > 0 &&
+      claimRecords().some((claim) => !claim.spent)
+    ) {
       setMintStep(MintStep.CLAIM);
-      setSubMessage('You have privately minted, now claim your ZK NFT.')
+      setSubMessage('You have privately minted, now claim your ZK NFT.');
       return;
     }
 
     if (!settings?.whiteList) {
       setMintStep(MintStep.OPENMINT);
-      setSubMessage('Privately mint your ZK NFT!')
+      setSubMessage('Privately mint your ZK NFT!');
       return;
     }
 
     if (canWhitelistMint()) {
       setMintStep(MintStep.MINT);
-      setSubMessage('You are on the list! Mint now.')
+      setSubMessage('You are on the list! Mint now.');
     } else {
       setMintStep(MintStep.WAIT);
       if (whitelistRecords().length > 0) {
-        setSubMessage('You are on the list, but you have already minted.')
+        setSubMessage('You are on the list, but you have already minted.');
       } else {
         setSubMessage('You are not on list or.');
       }
     }
-  }
+  };
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
@@ -181,32 +223,37 @@ const MintPage: NextPageWithLayout = () => {
         NFTProgramId,
         'open_mint',
         [randomScalar],
-        Math.floor(8_500_000),
+        Math.floor(8_500_000)
       );
     }
-    
+
     if (mintStep === MintStep.MINT) {
       const randomScalar = random(0, 100000000000) + 'scalar';
-      const whitelistRecord = whitelistRecords().find(r => !r.spent);
+      const whitelistRecord = whitelistRecords().find((r) => !r.spent);
       aleoTransaction = Transaction.createTransaction(
         publicKey,
         WalletAdapterNetwork.Testnet,
         NFTProgramId,
         'mint',
         [whitelistRecord, randomScalar],
-        Math.floor(7_000_000),
+        Math.floor(7_000_000)
       );
-    };
+    }
 
     if (mintStep === MintStep.CLAIM) {
       const claims = claimRecords();
-      const unspentClaimRecord = claims.find(claim => !claim.spent);
+      const unspentClaimRecord = claims.find((claim) => !claim.spent);
       const claimData = unspentClaimRecord?.data.claim as string;
       // claim data should be a field.private value
       const claimKey = claimData.split('.')[0];
       const nftData = await getNFTs(TESTNET3_API_URL);
-      const tokenEditionHash = (await getClaimValue(claimKey)).replaceAll("\"", "");
-      const matchingNft = nftData.nfts.find((nft) => nft.tokenEditionHash === tokenEditionHash);
+      const tokenEditionHash = (await getClaimValue(claimKey)).replaceAll(
+        '"',
+        ''
+      );
+      const matchingNft = nftData.nfts.find(
+        (nft) => nft.tokenEditionHash === tokenEditionHash
+      );
       if (!matchingNft) {
         setSubMessage('No NFT matching claim found.');
       } else {
@@ -218,16 +265,16 @@ const MintPage: NextPageWithLayout = () => {
           NFTProgramId,
           'claim_nft',
           [unspentClaimRecord, tokenId, edition],
-          Math.floor(4_250_000),
+          Math.floor(4_250_000)
         );
       }
     }
 
     if (aleoTransaction) {
       const txId =
-      (await (wallet?.adapter as LeoWalletAdapter).requestTransaction(
-        aleoTransaction
-      )) || '';
+        (await (wallet?.adapter as LeoWalletAdapter).requestTransaction(
+          aleoTransaction
+        )) || '';
       setTransactionId(txId);
     }
   };
@@ -252,41 +299,50 @@ const MintPage: NextPageWithLayout = () => {
   return (
     <>
       <NextSeo
-        title="Leo Wallet | Mint NFTs"
-        description="Mint an NFT using the Leo Wallet"
+        title="Alei | Tyron SSI Protocol"
+        description="Tyron Self-Sovereign Identity Protocol"
       />
-      <div className="mx-auto max-w-md px-4 mt-12 pb-14 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 xl:px-10 2xl:px-0">
-        <h2 className="mb-14 text-lg font-medium uppercase text-center tracking-wider text-gray-900 dark:text-white sm:mb-10 sm:text-2xl">
-          JOIN THE PRIDE
-        </h2>
-        {timeToMint > 0 && (
-          <div className='flex justify-center mb-6'>
-            <MintCountdown date={Date.now() + timeToMint} />
-          </div>
+      <div className="mx-auto mt-12 max-w-md px-4 pb-14 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 xl:px-10 2xl:px-0">
+        {mintStep === MintStep.CONNECT && (
+          <>
+            <h2 className="mb-14 text-center text-lg font-medium uppercase tracking-wider text-gray-900 dark:text-white sm:mb-10 sm:text-2xl">
+              JOIN THE PRIDE
+            </h2>
+            {timeToMint > 0 && (
+              <div className="mb-6 flex justify-center">
+                <MintCountdown date={Date.now() + timeToMint} />
+              </div>
+            )}
+            <ImageSlider images={sliderImages} interval={5000} />
+            {settingsNum !== undefined && (
+              <div className="my-8 flex justify-center">
+                <Button
+                  className="text-xl shadow-card dark:bg-gray-700 md:h-10 md:px-5 xl:h-12 xl:px-7"
+                  size="large"
+                  disabled={
+                    !settings?.active || !publicKey //||
+                    // mintStep === MintStep.WAIT
+                  }
+                  onClick={() => handleButtonClick()}
+                >
+                  {mintStep}
+                </Button>
+              </div>
+            )}
+            {transactionId && (
+              <div className="text-center text-white">
+                <div>{`Transaction status: ${status}`}</div>
+              </div>
+            )}
+            {publicKey && !transactionId && (
+              <div className="text-center text-white">
+                <div>{subMessage}</div>
+              </div>
+            )}
+          </>
         )}
-        <ImageSlider images={sliderImages} interval={5000} />
-        {settingsNum !== undefined && (
-          <div className='flex justify-center my-8'>
-            <Button
-              className="text-xl shadow-card dark:bg-gray-700 md:h-10 md:px-5 xl:h-12 xl:px-7"
-              size='large'
-              disabled={!settings?.active || !publicKey || mintStep === MintStep.WAIT}
-              onClick={() => handleButtonClick()}
-            >
-                {mintStep}
-            </Button>
-          </div>
-        )}
-        {transactionId && (
-          <div className='text-white text-center'>
-            <div>{`Transaction status: ${status}`}</div>
-          </div>
-        )}
-        {publicKey && !transactionId && (
-          <div className='text-white text-center'>
-            <div>{subMessage}</div>
-          </div>
-        )}
+
+        {mintStep != MintStep.CONNECT && <Tyron />}
       </div>
     </>
   );
