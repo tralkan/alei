@@ -1,20 +1,29 @@
 ## Documentation
 
-The full documentation can be found [here](https://art.privacypride.com/)
+The full documentation can be found at [alei.ssiprotocol.com](https://alei.ssiprotocol.com) & [art.privacypride.com](https://art.privacypride.com/)
+
+## Leo smart contract
+
+You can read the program at [`main.leo`](./program/src/main.leo) which integrates the TyronSSI account.
+
+To read the Tyron program in detail, you can visit [`tyron.leo`](./program/tyron/tyron.leo)
+.
 
 ## 🚀 Quick Start
 
+Bootstrapped with &hearts; using `demox-labs/art-factory`.
+
 Ensure you have:
 
-- [Node.js](https://nodejs.org) 16 or later installed
-- [Yarn](https://yarnpkg.com) v1 or v2 installed
+- Node.js v16 or later installed
+- Yarn
 
 Then run the following:
 
 ### 1) Clone the repository
 
 ```bash
-git clone https://github.com/demox-labs/art-factory && cd art-factory
+git clone https://github.com/tralkan/alei && cd alei
 ```
 
 ### 2) Install dependencies
@@ -23,15 +32,11 @@ git clone https://github.com/demox-labs/art-factory && cd art-factory
 yarn
 ```
 
-### 3) Update the env
+<!-- ### 3) Update the env
 
-Replace the values in the `./.env` file
+Replace the values in the `./.env` file -->
 
-### 4) Install Leo (optional if you want to change the program)
-
-Find the full instructions here: https://github.com/AleoHQ/leo
-
-### 5) Development
+### 3) Development
 
 Run a local server on localhost:3000.
 
@@ -39,9 +44,6 @@ Run a local server on localhost:3000.
 yarn dev
 ```
 
+### 4) Install Leo (optional if you want to change the program)
 
-### 6) Build
-
-```bash
-yarn build
-```
+Find the full instructions here: https://github.com/AleoHQ/leo
