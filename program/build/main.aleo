@@ -1,4 +1,4 @@
-program leo_nft.aleo;
+program tyron_leo_nft_test2.aleo;
 
 struct TokenId:
     data1 as u128;
@@ -32,6 +32,21 @@ record NFT_ownership:
     data as TokenId.private;
     edition as scalar.private;
 
+record AppController:
+    owner as address.private;
+
+record Guardian:
+    owner as address.private;
+    signer as address.private;
+
+struct Account:
+    signer as address;
+    guardian_count as u8;
+
+struct Signers:
+    current as address;
+    new as address;
+
 
 mapping nft_owners:
 	key as field.public;
@@ -57,13 +72,25 @@ mapping toggle_settings:
 	key as u8.public;
 	value as u32.public;
 
+
+mapping accounts:
+	key as address.public;
+	value as Account.public;
+
+
+mapping signers:
+	key as Signers.public;
+	value as u8.public;
+
 function initialize_collection:
-    input r0 as u128.public;
+    input r0 as AppController.record;
     input r1 as u128.public;
-    input r2 as BaseURI.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    async initialize_collection r0 r1 r2 into r3;
-    output r3 as leo_nft.aleo/initialize_collection.future;
+    input r2 as u128.public;
+    input r3 as BaseURI.public;
+    cast self.signer into r4 as AppController.record;
+    async initialize_collection r1 r2 r3 into r5;
+    output r4 as AppController.record;
+    output r5 as tyron_leo_nft_test2.aleo/initialize_collection.future;
 
 finalize initialize_collection:
     input r0 as u128.public;
@@ -84,13 +111,15 @@ finalize initialize_collection:
 
 
 function add_nft:
-    input r0 as TokenId.public;
-    input r1 as scalar.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    hash.bhp256 r0 into r2 as field;
-    commit.bhp256 r2 r1 into r3 as field;
-    async add_nft r3 into r4;
-    output r4 as leo_nft.aleo/add_nft.future;
+    input r0 as AppController.record;
+    input r1 as TokenId.public;
+    input r2 as scalar.public;
+    hash.bhp256 r1 into r3 as field;
+    commit.bhp256 r3 r2 into r4 as field;
+    cast self.signer into r5 as AppController.record;
+    async add_nft r4 into r6;
+    output r5 as AppController.record;
+    output r6 as tyron_leo_nft_test2.aleo/add_nft.future;
 
 finalize add_nft:
     input r0 as field.public;
@@ -107,13 +136,15 @@ finalize add_nft:
 
 
 function add_minter:
-    input r0 as address.private;
-    input r1 as u8.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    cast r0 r1 into r2 as NFT_mint.record;
-    async add_minter into r3;
-    output r2 as NFT_mint.record;
-    output r3 as leo_nft.aleo/add_minter.future;
+    input r0 as AppController.record;
+    input r1 as address.private;
+    input r2 as u8.public;
+    cast self.signer into r3 as AppController.record;
+    cast r1 r2 into r4 as NFT_mint.record;
+    async add_minter into r5;
+    output r3 as AppController.record;
+    output r4 as NFT_mint.record;
+    output r5 as tyron_leo_nft_test2.aleo/add_minter.future;
 
 finalize add_minter:
     get toggle_settings[0u8] into r0;
@@ -122,10 +153,10 @@ finalize add_minter:
 
 
 function update_toggle_settings:
-    input r0 as u32.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    async update_toggle_settings r0 into r1;
-    output r1 as leo_nft.aleo/update_toggle_settings.future;
+    input r0 as AppController.record;
+    input r1 as u32.public;
+    async update_toggle_settings r1 into r2;
+    output r2 as tyron_leo_nft_test2.aleo/update_toggle_settings.future;
 
 finalize update_toggle_settings:
     input r0 as u32.public;
@@ -138,10 +169,12 @@ finalize update_toggle_settings:
 
 
 function set_mint_block:
-    input r0 as u32.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    async set_mint_block r0 into r1;
-    output r1 as leo_nft.aleo/set_mint_block.future;
+    input r0 as AppController.record;
+    input r1 as u32.public;
+    cast self.signer into r2 as AppController.record;
+    async set_mint_block r1 into r3;
+    output r2 as AppController.record;
+    output r3 as tyron_leo_nft_test2.aleo/set_mint_block.future;
 
 finalize set_mint_block:
     input r0 as u32.public;
@@ -152,10 +185,12 @@ finalize set_mint_block:
 
 
 function update_symbol:
-    input r0 as u128.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    async update_symbol r0 into r1;
-    output r1 as leo_nft.aleo/update_symbol.future;
+    input r0 as AppController.record;
+    input r1 as u128.public;
+    cast self.signer into r2 as AppController.record;
+    async update_symbol r1 into r3;
+    output r2 as AppController.record;
+    output r3 as tyron_leo_nft_test2.aleo/update_symbol.future;
 
 finalize update_symbol:
     input r0 as u128.public;
@@ -166,10 +201,12 @@ finalize update_symbol:
 
 
 function update_base_uri:
-    input r0 as BaseURI.public;
-    assert.eq self.caller aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy;
-    async update_base_uri r0 into r1;
-    output r1 as leo_nft.aleo/update_base_uri.future;
+    input r0 as AppController.record;
+    input r1 as BaseURI.public;
+    cast self.signer into r2 as AppController.record;
+    async update_base_uri r1 into r3;
+    output r2 as AppController.record;
+    output r3 as tyron_leo_nft_test2.aleo/update_base_uri.future;
 
 finalize update_base_uri:
     input r0 as BaseURI.public;
@@ -189,7 +226,7 @@ function open_mint:
     cast self.caller r2 into r3 as NFT_claim.record;
     async open_mint r2 into r4;
     output r3 as NFT_claim.record;
-    output r4 as leo_nft.aleo/open_mint.future;
+    output r4 as tyron_leo_nft_test2.aleo/open_mint.future;
 
 finalize open_mint:
     input r0 as field.public;
@@ -223,7 +260,7 @@ function mint:
     async mint r3 into r7;
     output r5 as NFT_mint.record;
     output r6 as NFT_claim.record;
-    output r7 as leo_nft.aleo/mint.future;
+    output r7 as tyron_leo_nft_test2.aleo/mint.future;
 
 finalize mint:
     input r0 as field.public;
@@ -255,7 +292,7 @@ function claim_nft:
     cast r0.owner r1 r2 into r5 as NFT.record;
     async claim_nft r0.claim r4 into r6;
     output r5 as NFT.record;
-    output r6 as leo_nft.aleo/claim_nft.future;
+    output r6 as tyron_leo_nft_test2.aleo/claim_nft.future;
 
 finalize claim_nft:
     input r0 as field.public;
@@ -269,7 +306,7 @@ function authorize:
     input r0 as NFT.record;
     input r1 as u64.public;
     async authorize into r2;
-    output r2 as leo_nft.aleo/authorize.future;
+    output r2 as tyron_leo_nft_test2.aleo/authorize.future;
 
 finalize authorize:
     assert.eq 0u8 1u8;
@@ -289,7 +326,7 @@ function transfer_public:
     hash.bhp256 r1 into r3 as field;
     commit.bhp256 r3 r2 into r4 as field;
     async transfer_public r0 r4 self.caller into r5;
-    output r5 as leo_nft.aleo/transfer_public.future;
+    output r5 as tyron_leo_nft_test2.aleo/transfer_public.future;
 
 finalize transfer_public:
     input r0 as address.public;
@@ -305,7 +342,7 @@ function convert_private_to_public:
     hash.bhp256 r0.data into r1 as field;
     commit.bhp256 r1 r0.edition into r2 as field;
     async convert_private_to_public r0.owner r2 into r3;
-    output r3 as leo_nft.aleo/convert_private_to_public.future;
+    output r3 as tyron_leo_nft_test2.aleo/convert_private_to_public.future;
 
 finalize convert_private_to_public:
     input r0 as address.public;
@@ -323,7 +360,7 @@ function convert_public_to_private:
     cast r0 r1 r2 into r5 as NFT.record;
     async convert_public_to_private r0 r4 into r6;
     output r5 as NFT.record;
-    output r6 as leo_nft.aleo/convert_public_to_private.future;
+    output r6 as tyron_leo_nft_test2.aleo/convert_public_to_private.future;
 
 finalize convert_public_to_private:
     input r0 as address.public;
@@ -331,3 +368,100 @@ finalize convert_public_to_private:
     get nft_owners[r1] into r2;
     assert.eq r0 r2;
     set aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into nft_owners[r1];
+
+
+function set_controller:
+    cast self.signer into r0 as AppController.record;
+    async set_controller self.signer into r1;
+    output r0 as AppController.record;
+    output r1 as tyron_leo_nft_test2.aleo/set_controller.future;
+
+finalize set_controller:
+    input r0 as address.public;
+    cast r0 0u8 into r1 as Account;
+    get.or_use accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz] r1 into r2;
+    assert.eq r2 r1;
+    set r1 into accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz];
+
+
+function update_controller:
+    input r0 as AppController.record;
+    input r1 as address.private;
+    assert.neq self.signer r1;
+    cast r1 into r2 as AppController.record;
+    async update_controller r1 into r3;
+    output r2 as AppController.record;
+    output r3 as tyron_leo_nft_test2.aleo/update_controller.future;
+
+finalize update_controller:
+    input r0 as address.public;
+    cast r0 0u8 into r1 as Account;
+    get.or_use accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz] r1 into r2;
+    assert.neq r2 r1;
+    set r1 into accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz];
+
+
+function add_guardian:
+    input r0 as AppController.record;
+    input r1 as address.private;
+    assert.neq self.signer r1;
+    cast self.signer into r2 as AppController.record;
+    cast r1 self.signer into r3 as Guardian.record;
+    async add_guardian self.signer into r4;
+    output r2 as AppController.record;
+    output r3 as Guardian.record;
+    output r4 as tyron_leo_nft_test2.aleo/add_guardian.future;
+
+finalize add_guardian:
+    input r0 as address.public;
+    get accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz] into r1;
+    add r1.guardian_count 1u8 into r2;
+    cast r0 r2 into r3 as Account;
+    set r3 into accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz];
+
+
+function add_signature:
+    input r0 as Guardian.record;
+    input r1 as address.private;
+    assert.neq r0.signer r1;
+    cast self.signer r0.signer into r2 as Guardian.record;
+    async add_signature r0.owner r0.signer r1 into r3;
+    output r2 as Guardian.record;
+    output r3 as tyron_leo_nft_test2.aleo/add_signature.future;
+
+finalize add_signature:
+    input r0 as address.public;
+    input r1 as address.public;
+    input r2 as address.public;
+    cast r1 r2 into r3 as Signers;
+    get.or_use signers[r3] 0u8 into r4;
+    add r4 1u8 into r5;
+    set r5 into signers[r3];
+
+
+function social_recovery:
+    input r0 as Guardian.record;
+    input r1 as address.private;
+    assert.neq r0.signer r1;
+    cast r1 into r2 as AppController.record;
+    cast self.signer r1 into r3 as Guardian.record;
+    async social_recovery r0.signer r1 into r4;
+    output r2 as AppController.record;
+    output r3 as Guardian.record;
+    output r4 as tyron_leo_nft_test2.aleo/social_recovery.future;
+
+finalize social_recovery:
+    input r0 as address.public;
+    input r1 as address.public;
+    get accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz] into r2;
+    assert.eq r2.signer r0;
+    gte r2.guardian_count 3u8 into r3;
+    assert.eq r3 true;
+    div r2.guardian_count 2u8 into r4;
+    add r4 1u8 into r5;
+    cast r0 r1 into r6 as Signers;
+    get.or_use signers[r6] 0u8 into r7;
+    gte r7 r5 into r8;
+    assert.eq r8 true;
+    cast r1 0u8 into r9 as Account;
+    set r9 into accounts[aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz];

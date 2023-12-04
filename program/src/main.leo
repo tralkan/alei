@@ -1,5 +1,6 @@
-// The 'leo_nft' program.
-program leo_nft.aleo {
+// The 'leo_nft' program secured by Tyron Social Recovery.
+
+program tyron_leo_nft_test2.aleo {
     // dummy address, ie the aleo address equivalent of 0: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
     struct TokenId {
         data1: u128, // Part 1 of the image data -- i.e., a way to link this nft to image or aws
@@ -67,12 +68,15 @@ program leo_nft.aleo {
     mapping toggle_settings: u8 => u32;
 
     transition initialize_collection(
+        private controller: AppController,
         public total: u128,
         public symbol: u128,
         public base_uri: BaseURI,
-    ) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
-        return then finalize(total, symbol, base_uri);
+    ) -> AppController {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+        return AppController {
+            owner: self.signer
+        } then finalize(total, symbol, base_uri);
     }
 
     finalize initialize_collection(
@@ -104,11 +108,14 @@ program leo_nft.aleo {
     
     // Load the data into the mapping
     // Enables someone to mint an NFT with provided image data
-    transition add_nft(public tokenId: TokenId, public edition: scalar) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+    transition add_nft(private controller: AppController, public tokenId: TokenId, public edition: scalar) -> AppController {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
         let tokenHash: field = BHP256::hash_to_field(tokenId);
         let tokenEditionHash: field = BHP256::commit_to_field(tokenHash, edition);
-        return then finalize(tokenEditionHash);
+        
+        return AppController {
+            owner: self.signer
+        } then finalize(tokenEditionHash);
     }
 
     finalize add_nft(public tokenEditionHash: field) {
@@ -129,12 +136,16 @@ program leo_nft.aleo {
         general_settings.set(0u8, mintable_num + 1u128);
     }
 
-    transition add_minter(private minter: address, public amount: u8) -> NFT_mint {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
-        return NFT_mint {
-            owner: minter,
-            amount,
-        } then finalize();
+    transition add_minter(private controller: AppController, private minter: address, public amount: u8) -> (AppController, NFT_mint) {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+        return (
+            AppController {
+                owner: self.signer
+            },
+            NFT_mint {
+                owner: minter,
+                amount,
+        }) then finalize();
     }
 
     finalize add_minter()
@@ -148,8 +159,8 @@ program leo_nft.aleo {
     }
 
     // call this function to toggle minting, the whitelist requirement, or to permanently freeze the contract
-    transition update_toggle_settings(public toggle_settings_bitstring: u32) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+    transition update_toggle_settings(private controller: AppController, public toggle_settings_bitstring: u32) {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
         return then finalize(toggle_settings_bitstring);
     }
 
@@ -168,9 +179,11 @@ program leo_nft.aleo {
         toggle_settings.set(0u8, toggle_settings_bitstring);
     }
 
-    transition set_mint_block(public mint_block: u32) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
-        return then finalize(mint_block);
+    transition set_mint_block(private controller: AppController, public mint_block: u32) -> AppController {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+        return AppController {
+            owner: self.signer
+        } then finalize(mint_block);
     }
 
     finalize set_mint_block(public mint_block: u32) {
@@ -184,9 +197,11 @@ program leo_nft.aleo {
         toggle_settings.set(1u8, mint_block);
     }
 
-    transition update_symbol(public symbol: u128) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
-        return then finalize(symbol);
+    transition update_symbol(private controller: AppController, public symbol: u128) -> AppController {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+        return AppController {
+            owner: self.signer
+        } then finalize(symbol);
     }
 
     finalize update_symbol(public symbol: u128) {
@@ -200,9 +215,12 @@ program leo_nft.aleo {
         general_settings.set(2u8, symbol);
     }
 
-    transition update_base_uri(public base_uri: BaseURI) {
-        assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
-        return then finalize(base_uri);
+    transition update_base_uri(private controller: AppController, public base_uri: BaseURI) -> AppController {
+        // assert_eq(self.caller, aleo1gy3d0s00s2k7rmgqznnx2q8htmjm2p5rk8q40u5yklqhe44utvys0dmzdy);
+        
+        return AppController {
+            owner: self.signer
+        } then finalize(base_uri);
     }
 
     finalize update_base_uri(public base_uri: BaseURI) {
@@ -428,5 +446,170 @@ program leo_nft.aleo {
         assert_eq(owner, nft_owners.get(tokenEditionHash));
         // mapping::remove is not implemented yet, so instead we set the owner to be a dummy address that cannot publicly transfer or convert to private
         nft_owners.set(tokenEditionHash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
+    }
+
+    // @notice Tyron component
+
+    const tyron_address: address = aleo1r5gspyc79mx59txq5z76wk4u6vr6cv5qca29usald4mkmcwq5ypqg32trz;
+
+    record AppController {
+        // The account signer.
+        owner: address
+    }
+
+    // @dev tyron_address vs account
+    mapping accounts: address => Account;
+    mapping signers: Signers => u8;
+
+    record Guardian{
+        // The guardian.
+        owner: address,
+        // The account signer.
+        signer: address,
+    }
+
+    struct Account{
+        signer: address,
+        guardian_count: u8,
+    }
+
+    struct Signers{
+        current: address,
+        new: address
+    }
+
+    // @notice Sets initial controller.
+    transition set_controller() -> AppController {
+        return AppController {
+            owner: self.signer
+        } then finalize(self.signer);
+    }
+
+    finalize set_controller(signer: address) {
+        let acc: Account = Account{
+            signer: signer,
+            guardian_count: 0u8,
+        };
+
+        // @dev If there is an account already, then throw an error.
+        let current_acc: Account = Mapping::get_or_use(accounts, tyron_address, acc);
+        assert_eq(current_acc, acc);
+
+        // @dev Initialize account.
+        Mapping::set(accounts, tyron_address, acc);
+    }
+
+    // @notice Updates controller. It revokes all guardians.
+    transition update_controller(controller: AppController, new_signer: address) -> AppController {
+        assert_neq(self.signer, new_signer);
+
+        return AppController {
+            owner: new_signer,
+        } then finalize(new_signer);
+    }
+
+    finalize update_controller(new_signer: address) {
+        let acc: Account = Account{
+            signer: new_signer,
+            guardian_count: 0u8,
+        };
+
+        // @dev If there is no account, then throw an error.
+        let current_acc: Account = Mapping::get_or_use(accounts, tyron_address, acc);
+        assert_neq(current_acc, acc);
+
+        // @dev Update account.
+        Mapping::set(accounts, tyron_address, acc);
+    }
+
+    transition add_guardian(controller: AppController, new_guardian: address) -> (AppController, Guardian) {
+        assert_neq(self.signer, new_guardian);
+        return (
+            AppController {
+                owner: self.signer
+            },
+            Guardian {
+            owner: new_guardian,
+            signer: self.signer,
+        }) then finalize(self.signer);
+    }
+
+    finalize add_guardian(signer: address){
+        // @dev Update the account info.
+        let account: Account = Mapping::get(accounts, tyron_address);
+        
+        let count: u8 = account.guardian_count;
+        count += 1u8;
+
+        let update: Account = Account {
+            signer: signer,
+            guardian_count: count,
+        };
+
+        Mapping::set(accounts, tyron_address, update);
+    }
+
+    transition add_signature(guardian: Guardian, new_signer: address) -> Guardian {
+        assert_neq(guardian.signer, new_signer);
+        return Guardian {
+            owner: self.signer,
+            signer: guardian.signer
+        } then finalize(guardian.owner, guardian.signer, new_signer);
+    }
+
+    finalize add_signature(current_guardian: address, guardian_signer: address, new_signer: address){
+        let signer: Signers = Signers {
+            current: guardian_signer,
+            new: new_signer
+        };
+
+        let sigs: u8 = Mapping::get_or_use(signers, signer, 0u8);
+        sigs += 1u8;
+
+        Mapping::set(signers, signer, sigs);
+    }
+
+    transition social_recovery(guardian: Guardian, new_signer: address) -> (AppController, Guardian) {
+        assert_neq(guardian.signer, new_signer);
+
+        return (
+            AppController {
+                owner: new_signer
+            },
+            Guardian {
+                owner: self.signer,
+                signer: new_signer,
+        }) then finalize(guardian.signer, new_signer);
+    }
+
+    finalize social_recovery(guardian_signer: address, new_signer: address){
+        // @dev Get caller/app account. It must be registered.
+        let account: Account = Mapping::get(accounts, tyron_address);
+        
+        // @dev The account signer must be equal to the guardian's signer.
+        assert_eq(account.signer, guardian_signer);
+
+        // @dev The guardian threshold must be at least 3.
+        let min_three: bool = account.guardian_count >= 3u8;
+        assert(min_three);
+
+        // @dev Calculate guardian threshold.
+        let threshold: u8 = account.guardian_count.div(2u8).add(1u8);
+        
+        let signer: Signers = Signers {
+            current: guardian_signer,
+            new: new_signer
+        };
+
+        let sigs: u8 = Mapping::get_or_use(signers, signer, 0u8);
+        let verified: bool = sigs >= threshold;
+        assert(verified);
+
+        // @dev Update acount.
+        let update: Account = Account {
+            signer: new_signer,
+            guardian_count: 0u8,
+        };
+        Mapping::set(accounts, tyron_address, update);   
     }
 }

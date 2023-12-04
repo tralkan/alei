@@ -6,6 +6,9 @@ const runtimeCaching = require('next-pwa/cache');
 require('dotenv').config();
 
 module.exports = withPWA({
+  experimental: {
+    serverComponents: true,
+  },
   env: {
     URL: process.env.URL,
     TWITTER: process.env.TWITTER,
@@ -45,6 +48,7 @@ module.exports = withPWA({
     Object.assign(experiments, {
       asyncWebAssembly: true,
       syncWebAssembly: true,
+      topLevelAwait: true,
     });
     config.experiments = experiments;
     const alias = config.resolve.alias || {};
@@ -52,7 +56,7 @@ module.exports = withPWA({
       react$: require.resolve('react'),
     });
     config.resolve.alias = alias;
-    
+
     // Handle nextjs bug with wasm static files
     patchWasmModuleImport(config, options.isServer);
 
@@ -62,20 +66,26 @@ module.exports = withPWA({
 
 function patchWasmModuleImport(config, isServer) {
   config.experiments = Object.assign(config.experiments || {}, {
-      asyncWebAssembly: true,
+    asyncWebAssembly: true,
   });
 
   config.optimization.moduleIds = 'named';
 
   config.module.rules.push({
-      test: /\.wasm$/,
-      type: 'webassembly/async',
+    test: /\.wasm$/,
+    type: 'webassembly/async',
+  });
+  config.module.rules.push({
+    test: /.(wasm)$/,
+    type: 'javascript/auto',
+    loader: 'file-loader',
   });
 
   // TODO: improve this function -> track https://github.com/vercel/next.js/issues/25852
   if (isServer) {
-      config.output.webassemblyModuleFilename = './../static/wasm/[modulehash].wasm';
+    config.output.webassemblyModuleFilename =
+      './../static/wasm/[modulehash].wasm';
   } else {
-      config.output.webassemblyModuleFilename = 'static/wasm/[modulehash].wasm';
+    config.output.webassemblyModuleFilename = 'static/wasm/[modulehash].wasm';
   }
 }
